@@ -58,6 +58,13 @@ func (d *Daemon) Sync(ctx context.Context, started time.Time, newRevision string
 		}
 		cancel()
 	}
+	if d.SopsEnabled {
+		ctxt, cancel := context.WithTimeout(ctx, d.GitTimeout)
+		if err := working.SopsDecrypt(ctxt); err != nil {
+			return err
+		}
+		cancel()
+	}
 
 	// Retrieve change set of commits we need to sync
 	c, err := getChangeSet(ctx, ratchet, newRevision, d.Repo, d.GitTimeout, d.GitConfig.Paths)
