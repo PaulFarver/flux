@@ -128,10 +128,11 @@ func secretUnseal(ctx context.Context, workingDir string) error {
 	return nil
 }
 
-func sopsDecrypt(ctx context.Context, workingDir string) error {
+func sopsDecrypt(ctx context.Context, workingDir string, suffix string) error {
 	return filepath.Walk(workingDir, func(path string, f os.FileInfo, err error) error {
-		if !f.IsDir() && strings.HasSuffix(f.Name(), ".secret.yaml") {
-			if err := sopsDecryptSingleFile(ctx, workingDir, path); err != nil {
+		if !f.IsDir() && strings.HasSuffix(path, suffix) {
+			output := strings.TrimSuffix(path, suffix) + ".yaml"
+			if err := sopsDecryptSingleFile(ctx, workingDir, path, output); err != nil {
 				return err
 			}
 		}
@@ -139,10 +140,10 @@ func sopsDecrypt(ctx context.Context, workingDir string) error {
 	})
 }
 
-func sopsDecryptSingleFile(ctx context.Context, workingDir string, path string) error {
-	args := []string{"--decrypt", "--in-place", path}
+func sopsDecryptSingleFile(ctx context.Context, workingDir string, path string, output string) error {
+	args := []string{"--decrypt", "--input-type", "yaml", "--output-type", "yaml", "--output", output, path}
 	if err := execCmd(ctx, "sops", args); err != nil {
-		return errors.Wrap(err, "sops --decrypt --in-place"+path)
+		return errors.Wrap(err, "sops "+strings.Join(args, " "))
 	}
 	return nil
 }
