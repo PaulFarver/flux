@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -35,6 +36,10 @@ func Load(base string, paths []string) (map[string]KubeManifest, error) {
 			}
 
 			if charts.isPathInChart(path) {
+				return nil
+			}
+
+			if strings.HasSuffix(path, ".enc.yaml") || strings.HasSuffix(path, ".enc.yml") {
 				return nil
 			}
 
