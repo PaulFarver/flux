@@ -48,6 +48,7 @@ type Daemon struct {
 	ManifestGenerationEnabled bool
 	GitSecretEnabled          bool
 	SopsEnabled               bool
+	SopsSuffix                string
 	// bookkeeping
 	*LoopVars
 }
@@ -658,7 +659,7 @@ func (d *Daemon) WithWorkingClone(ctx context.Context, fn func(*git.Checkout) er
 		}
 	}
 	if d.SopsEnabled {
-		if err := co.SopsDecrypt(ctx); err != nil {
+		if err := co.SopsDecrypt(ctx, d.SopsSuffix); err != nil {
 			return err
 		}
 	}
@@ -684,7 +685,7 @@ func (d *Daemon) WithReadonlyClone(ctx context.Context, fn func(*git.Export) err
 		}
 	}
 	if d.SopsEnabled {
-		if err := co.SopsDecrypt(ctx); err != nil {
+		if err := co.SopsDecrypt(ctx, d.SopsSuffix); err != nil {
 			return err
 		}
 	}

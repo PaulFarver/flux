@@ -60,7 +60,7 @@ func (d *Daemon) Sync(ctx context.Context, started time.Time, newRevision string
 	}
 	if d.SopsEnabled {
 		ctxt, cancel := context.WithTimeout(ctx, d.GitTimeout)
-		if err := working.SopsDecrypt(ctxt); err != nil {
+		if err := working.SopsDecrypt(ctxt, d.SopsSuffix); err != nil {
 			return err
 		}
 		cancel()
