@@ -38,8 +38,8 @@ func (e *Export) SecretUnseal(ctx context.Context) error {
 }
 
 // SopsDecrypt decrypts files encrypted with sops in the clone.
-func (e *Export) SopsDecrypt(ctx context.Context) error {
-	return sopsDecrypt(ctx, e.Dir())
+func (e *Export) SopsDecrypt(ctx context.Context, suffix string) error {
+	return sopsDecrypt(ctx, e.Dir(), suffix)
 }
 
 // ChangedFiles does a git diff listing changed files
