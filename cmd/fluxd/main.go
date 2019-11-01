@@ -121,6 +121,7 @@ func main() {
 		gitLabel     = fs.String("git-label", "", "label to keep track of sync progress; overrides both --git-sync-tag and --git-notes-ref")
 		gitSecret    = fs.Bool("git-secret", false, `if set, git-secret will be run on every git checkout. A gpg key must be imported using  --git-gpg-key-import or by mounting a keyring containing it directly`)
 		sops         = fs.Bool("sops", false, `if set, sops will decrypt manifests before applying. flux must have access to the secret key for decryption, for example with --git-gpg-key-import or by mounting a keyring containing it directly`)
+		sopsSuffix   = fs.String("sops-suffix", ".enc.yaml", `suffix of files, to decrypt with sops`)
 		// Old git config; still used if --git-label is not supplied, but --git-label is preferred.
 		gitSyncTag     = fs.String("git-sync-tag", defaultGitSyncTag, fmt.Sprintf("tag to use to mark sync progress for this cluster (only relevant when --sync-state=%s)", fluxsync.GitTagStateMode))
 		gitNotesRef    = fs.String("git-notes-ref", defaultGitNotesRef, "ref to use for keeping commit annotations in git notes")
@@ -644,6 +645,7 @@ func main() {
 		"set-author", *gitSetAuthor,
 		"git-secret", *gitSecret,
 		"sops", *sops,
+		"sops-suffix", *sopsSuffix,
 	)
 
 	var jobs *job.Queue
@@ -701,6 +703,7 @@ func main() {
 		ManifestGenerationEnabled: *manifestGeneration,
 		GitSecretEnabled:          *gitSecret,
 		SopsEnabled:               *sops,
+		SopsSuffix:                *sopsSuffix,
 		LoopVars: &daemon.LoopVars{
 			SyncInterval:        *syncInterval,
 			SyncTimeout:         *syncTimeout,
