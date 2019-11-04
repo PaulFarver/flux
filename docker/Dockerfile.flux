@@ -5,11 +5,6 @@ WORKDIR /home/flux
 RUN apk add --no-cache openssh-client ca-certificates tini 'git>=2.12.0' 'gnutls>=3.6.7' gnupg gawk socat
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing git-secret
 
-# Add the sops binary and allow it to be executed
-ARG SOPS_VERSION=3.4.0
-ADD https://github.com/mozilla/sops/releases/download/$SOPS_VERSION/sops-$SOPS_VERSION.linux /usr/local/bin/sops
-RUN chmod 0755 /usr/local/bin/sops
-
 # Add git hosts to known hosts file so we can use
 # StrickHostKeyChecking with git+ssh
 ADD ./known_hosts.sh /home/flux/known_hosts.sh
@@ -41,6 +36,11 @@ ENTRYPOINT [ "/sbin/tini", "--", "fluxd" ]
 # Get the kubeyaml binary (files) and put them on the path
 COPY --from=quay.io/squaremo/kubeyaml:0.7.0 /usr/lib/kubeyaml /usr/lib/kubeyaml/
 ENV PATH=/bin:/usr/bin:/usr/local/bin:/usr/lib/kubeyaml
+
+# Add the sops binary and allow it to be executed
+ARG SOPS_VERSION=3.4.0
+ADD https://github.com/mozilla/sops/releases/download/$SOPS_VERSION/sops-$SOPS_VERSION.linux /usr/local/bin/sops
+RUN chmod 0755 /usr/local/bin/sops
 
 # Create minimal nsswitch.conf file to prioritize the usage of /etc/hosts over DNS queries.
 # This resolves the conflict between:
