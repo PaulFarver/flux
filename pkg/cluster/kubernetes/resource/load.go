@@ -39,6 +39,7 @@ func Load(base string, paths []string) (map[string]KubeManifest, error) {
 				return nil
 			}
 
+			// TODO: Needs to be configured by the --sops-suffix option
 			if strings.HasSuffix(path, ".enc.yaml") || strings.HasSuffix(path, ".enc.yml") {
 				return nil
 			}
