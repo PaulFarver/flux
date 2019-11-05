@@ -42,10 +42,11 @@ func Load(base string, paths []string) (map[string]KubeManifest, error) {
 			}
 
 			if !info.IsDir() && filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml" {
+				var bytes []byte
 				if shouldDecrypt(path) {
-					bytes, err := decrypt.File(path, "yaml")
+					bytes, err = decrypt.File(path, "yaml")
 				} else {
-					bytes, err := ioutil.ReadFile(path)
+					bytes, err = ioutil.ReadFile(path)
 				}
 				if err != nil {
 					return errors.Wrapf(err, "unable to read file at %q", path)
