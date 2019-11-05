@@ -3,6 +3,7 @@ module github.com/fluxcd/flux
 go 1.13
 
 require (
+	github.com/Azure/go-autorest v12.2.0+incompatible // indirect
 	github.com/Jeffail/gabs v1.4.0
 	github.com/Masterminds/semver v1.4.2
 	github.com/aws/aws-sdk-go v1.21.6
