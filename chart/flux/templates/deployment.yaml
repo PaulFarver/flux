@@ -206,9 +206,7 @@ spec:
           {{- if .Values.git.signingKey }}
           - --git-signing-key={{ .Values.git.signingKey }}
           {{- end }}
-          {{- if .Values.git.verifySignatures }}
-          - --git-verify-signatures
-          {{- end }}
+          - --git-verify-signatures={{ .Values.git.verifySignatures }}
           - --git-set-author={{ .Values.git.setAuthor }}
           - --git-poll-interval={{ .Values.git.pollInterval }}
           - --git-timeout={{ .Values.git.timeout }}
@@ -220,7 +218,7 @@ spec:
           {{- if .Values.manifestGeneration }}
           - --manifest-generation=true
           {{- end }}
-          - --registry-poll-interval={{ .Values.registry.pollInterval }}
+          - --automation-interval={{ .Values.registry.pollInterval | default .Values.registry.automationInterval }}
           - --registry-rps={{ .Values.registry.rps }}
           - --registry-burst={{ .Values.registry.burst }}
           - --registry-trace={{ .Values.registry.trace }}
