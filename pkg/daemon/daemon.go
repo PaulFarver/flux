@@ -658,11 +658,6 @@ func (d *Daemon) WithWorkingClone(ctx context.Context, fn func(*git.Checkout) er
 			return err
 		}
 	}
-	if d.SopsEnabled {
-		if err := co.SopsDecrypt(ctx, d.SopsSuffix); err != nil {
-			return err
-		}
-	}
 	return fn(co)
 }
 
@@ -681,11 +676,6 @@ func (d *Daemon) WithReadonlyClone(ctx context.Context, fn func(*git.Export) err
 	defer co.Clean()
 	if d.GitSecretEnabled {
 		if err := co.SecretUnseal(ctx); err != nil {
-			return err
-		}
-	}
-	if d.SopsEnabled {
-		if err := co.SopsDecrypt(ctx, d.SopsSuffix); err != nil {
 			return err
 		}
 	}

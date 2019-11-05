@@ -9,7 +9,6 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -124,26 +123,6 @@ func secretUnseal(ctx context.Context, workingDir string) error {
 	args := []string{"secret", "reveal", "-f"}
 	if err := execGitCmd(ctx, args, gitCmdConfig{dir: workingDir}); err != nil {
 		return errors.Wrap(err, "git secret reveal -f")
-	}
-	return nil
-}
-
-func sopsDecrypt(ctx context.Context, workingDir string, suffix string) error {
-	return filepath.Walk(workingDir, func(path string, f os.FileInfo, err error) error {
-		if !f.IsDir() && strings.HasSuffix(path, suffix) {
-			output := strings.TrimSuffix(path, suffix) + ".yaml"
-			if err := sopsDecryptSingleFile(ctx, workingDir, path, output); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
-
-func sopsDecryptSingleFile(ctx context.Context, workingDir string, path string, output string) error {
-	args := []string{"--decrypt", "--input-type", "yaml", "--output-type", "yaml", "--output", output, path}
-	if err := execCmd(ctx, "sops", args); err != nil {
-		return errors.Wrap(err, "sops "+strings.Join(args, " "))
 	}
 	return nil
 }
@@ -447,32 +426,6 @@ func execGitCmd(ctx context.Context, args []string, config gitCmdConfig) error {
 		return errors.Wrap(ctx.Err(), fmt.Sprintf("running git command: %s %v", "git", args))
 	} else if ctx.Err() == context.Canceled {
 		return errors.Wrap(ctx.Err(), fmt.Sprintf("context was unexpectedly cancelled when running git command: %s %v", "git", args))
-	}
-	return err
-}
-
-func execCmd(ctx context.Context, command string, args []string) error {
-	c := exec.CommandContext(ctx, command, args...)
-
-	stdOutAndStdErr := &threadSafeBuffer{}
-	c.Stdout = stdOutAndStdErr
-	c.Stderr = stdOutAndStdErr
-
-	err := c.Run()
-	if err != nil {
-		if len(stdOutAndStdErr.Bytes()) > 0 {
-			err = errors.New(stdOutAndStdErr.String())
-			msg := findErrorMessage(stdOutAndStdErr)
-			if msg != "" {
-				err = fmt.Errorf("%s, full output:\n %s", msg, err.Error())
-			}
-		}
-	}
-
-	if ctx.Err() == context.DeadlineExceeded {
-		return errors.Wrap(ctx.Err(), fmt.Sprintf("running git command: %s %v", command, args))
-	} else if ctx.Err() == context.Canceled {
-		return errors.Wrap(ctx.Err(), fmt.Sprintf("context was unexpectedly cancelled when running git command: %s %v", command, args))
 	}
 	return err
 }
