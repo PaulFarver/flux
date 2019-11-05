@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"go.mozilla.org/sops/decrypt"
+
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
@@ -39,13 +41,12 @@ func Load(base string, paths []string) (map[string]KubeManifest, error) {
 				return nil
 			}
 
-			// TODO: Needs to be configured by the --sops-suffix option
-			if strings.HasSuffix(path, ".enc.yaml") || strings.HasSuffix(path, ".enc.yml") {
-				return nil
-			}
-
 			if !info.IsDir() && filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml" {
-				bytes, err := ioutil.ReadFile(path)
+				if shouldDecrypt(path) {
+					bytes, err := decrypt.File(path, "yaml")
+				} else {
+					bytes, err := ioutil.ReadFile(path)
+				}
 				if err != nil {
 					return errors.Wrapf(err, "unable to read file at %q", path)
 				}
@@ -175,4 +176,8 @@ func ParseMultidoc(multidoc []byte, source string) (map[string]KubeManifest, err
 		return objs, errors.Wrapf(err, "scanning multidoc from %q", source)
 	}
 	return objs, nil
+}
+
+func shouldDecrypt(path string) bool {
+	return strings.HasSuffix(path, ".enc.yaml") || strings.HasSuffix(path, ".enc.yml")
 }
