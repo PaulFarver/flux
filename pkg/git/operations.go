@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,6 +15,8 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+	"go.mozilla.org/sops"
+	"go.mozilla.org/sops/decrypt"
 )
 
 // If true, every git invocation will be echoed to stdout (with the exception of those added to `exemptedTraceCommands`)
@@ -128,11 +131,13 @@ func secretUnseal(ctx context.Context, workingDir string) error {
 	return nil
 }
 
-func sopsDecrypt(ctx context.Context, workingDir string, suffix string) error {
+func sopsDecrypt(workingDir string) error {
 	return filepath.Walk(workingDir, func(path string, f os.FileInfo, err error) error {
-		if !f.IsDir() && strings.HasSuffix(path, suffix) {
-			output := strings.TrimSuffix(path, suffix) + ".yaml"
-			if err := sopsDecryptSingleFile(ctx, workingDir, path, output); err != nil {
+		if err != nil {
+			return errors.Wrapf(err, "walking %q for yamels to decrypt", path)
+		}
+		if !f.IsDir() && (filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml") {
+			if err := sopsDecryptSingleFile(path, f.Mode()); err != nil {
 				return err
 			}
 		}
@@ -140,10 +145,16 @@ func sopsDecrypt(ctx context.Context, workingDir string, suffix string) error {
 	})
 }
 
-func sopsDecryptSingleFile(ctx context.Context, workingDir string, path string, output string) error {
-	args := []string{"--decrypt", "--input-type", "yaml", "--output-type", "yaml", "--output", output, path}
-	if err := execCmd(ctx, "sops", args); err != nil {
-		return errors.Wrap(err, "sops "+strings.Join(args, " "))
+func sopsDecryptSingleFile(path string, mode os.FileMode) error {
+	rawData, err := ioutil.ReadFile(path)
+	if err != nil {
+		return errors.Wrapf(err, "Unable to read file '%q' during sops decryption scan", path)
+	}
+	clearText, err := decrypt.Data(rawData, "yaml")
+	if err == sops.MetadataNotFound {
+		ioutil.WriteFile(path, clearText, mode)
+	} else if err != nil {
+		return errors.Wrapf(err, "Unable to decrypt file '%q'", path)
 	}
 	return nil
 }
@@ -447,32 +458,6 @@ func execGitCmd(ctx context.Context, args []string, config gitCmdConfig) error {
 		return errors.Wrap(ctx.Err(), fmt.Sprintf("running git command: %s %v", "git", args))
 	} else if ctx.Err() == context.Canceled {
 		return errors.Wrap(ctx.Err(), fmt.Sprintf("context was unexpectedly cancelled when running git command: %s %v", "git", args))
-	}
-	return err
-}
-
-func execCmd(ctx context.Context, command string, args []string) error {
-	c := exec.CommandContext(ctx, command, args...)
-
-	stdOutAndStdErr := &threadSafeBuffer{}
-	c.Stdout = stdOutAndStdErr
-	c.Stderr = stdOutAndStdErr
-
-	err := c.Run()
-	if err != nil {
-		if len(stdOutAndStdErr.Bytes()) > 0 {
-			err = errors.New(stdOutAndStdErr.String())
-			msg := findErrorMessage(stdOutAndStdErr)
-			if msg != "" {
-				err = fmt.Errorf("%s, full output:\n %s", msg, err.Error())
-			}
-		}
-	}
-
-	if ctx.Err() == context.DeadlineExceeded {
-		return errors.Wrap(ctx.Err(), fmt.Sprintf("running git command: %s %v", command, args))
-	} else if ctx.Err() == context.Canceled {
-		return errors.Wrap(ctx.Err(), fmt.Sprintf("context was unexpectedly cancelled when running git command: %s %v", command, args))
 	}
 	return err
 }
