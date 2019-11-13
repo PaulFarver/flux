@@ -120,8 +120,7 @@ func main() {
 		gitSetAuthor = fs.Bool("git-set-author", false, "if set, the author of git commits will reflect the user who initiated the commit and will differ from the git committer.")
 		gitLabel     = fs.String("git-label", "", "label to keep track of sync progress; overrides both --git-sync-tag and --git-notes-ref")
 		gitSecret    = fs.Bool("git-secret", false, `if set, git-secret will be run on every git checkout. A gpg key must be imported using  --git-gpg-key-import or by mounting a keyring containing it directly`)
-		sops         = fs.Bool("sops", false, `if set, sops will decrypt manifests before applying. flux must have access to the secret key for decryption, for example with --git-gpg-key-import or by mounting a keyring containing it directly`)
-		sopsSuffix   = fs.String("sops-suffix", ".enc.yaml", `suffix of files, to decrypt with sops`)
+		sopsEnabled  = fs.Bool("sops", false, `if set, sops will decrypt manifests before applying. flux must have access to the secret key for decryption, for example with --git-gpg-key-import or by mounting a keyring containing it directly`)
 		// Old git config; still used if --git-label is not supplied, but --git-label is preferred.
 		gitSyncTag     = fs.String("git-sync-tag", defaultGitSyncTag, fmt.Sprintf("tag to use to mark sync progress for this cluster (only relevant when --sync-state=%s)", fluxsync.GitTagStateMode))
 		gitNotesRef    = fs.String("git-notes-ref", defaultGitNotesRef, "ref to use for keeping commit annotations in git notes")
@@ -644,8 +643,7 @@ func main() {
 		"notes-ref", *gitNotesRef,
 		"set-author", *gitSetAuthor,
 		"git-secret", *gitSecret,
-		"sops", *sops,
-		"sops-suffix", *sopsSuffix,
+		"sops", *sopsEnabled,
 	)
 
 	var jobs *job.Queue
@@ -702,8 +700,7 @@ func main() {
 		Logger:                    log.With(logger, "component", "daemon"),
 		ManifestGenerationEnabled: *manifestGeneration,
 		GitSecretEnabled:          *gitSecret,
-		SopsEnabled:               *sops,
-		SopsSuffix:                *sopsSuffix,
+		SopsEnabled:               *sopsEnabled,
 		LoopVars: &daemon.LoopVars{
 			SyncInterval:        *syncInterval,
 			SyncTimeout:         *syncTimeout,
