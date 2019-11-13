@@ -360,6 +360,10 @@ func main() {
 		logger.Log("warning", fmt.Sprintf("--git-secret is enabled but there is no GPG key(s) provided using --git-gpg-key-import, we assume you mounted the keyring directly and continue"))
 	}
 
+	if *sopsEnabled && len(*gitImportGPG) == 0 {
+		logger.Log("warning", fmt.Sprintf("--sops is enabled but there is no GPG key(s) provided using --git-gpg-key-import, we assume that the means of decryption has been provided in another way"))
+	}
+
 	// Mechanical components.
 
 	// When we can receive from this channel, it indicates that we
