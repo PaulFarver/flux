@@ -152,10 +152,11 @@ func sopsDecryptSingleFile(path string, mode os.FileMode) error {
 	}
 	clearText, err := decrypt.Data(rawData, "yaml")
 	if err == sops.MetadataNotFound {
-		ioutil.WriteFile(path, clearText, mode)
+		return nil
 	} else if err != nil {
 		return errors.Wrapf(err, "Unable to decrypt file '%q'", path)
 	}
+	ioutil.WriteFile(path, clearText, mode)
 	return nil
 }
 
