@@ -3,9 +3,10 @@ module github.com/fluxcd/flux
 go 1.13
 
 require (
+	github.com/Azure/go-autorest v12.2.0+incompatible // indirect
 	github.com/Jeffail/gabs v1.4.0
 	github.com/Masterminds/semver v1.4.2
-	github.com/aws/aws-sdk-go v1.19.11
+	github.com/aws/aws-sdk-go v1.21.6
 	github.com/bradfitz/gomemcache v0.0.0-20190329173943-551aad21a668
 	github.com/docker/distribution v0.0.0-00010101000000-000000000000
 	github.com/evanphx/json-patch v4.1.0+incompatible
@@ -32,6 +33,7 @@ require (
 	github.com/weaveworks/common v0.0.0-20190410110702-87611edc252e
 	github.com/weaveworks/go-checkpoint v0.0.0-20170503165305-ebbb8b0518ab
 	github.com/whilp/git-urls v0.0.0-20160530060445-31bac0d230fa
+	go.mozilla.org/sops v0.0.0-20190912205235-14a22d7a7060
 	golang.org/x/sys v0.0.0-20190801041406-cbf593c0f2f3
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 	gopkg.in/yaml.v2 v2.2.2
