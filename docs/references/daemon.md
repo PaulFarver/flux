@@ -93,6 +93,7 @@ Version controlling of cluster manifests provides reproducibility and a historic
 | --ssh-keygen-type                                |                                    | -t argument to ssh-keygen (default unspecified)
 | **manifest generation**
 | --manifest-generation                            | false                              | search for .flux.yaml files to generate manifests
+| --sops                                           | false                              | if set, files encrypted with sops will be decrypted before being applied. Sops need access to at least one key you have encrypted the files with, for example with --git-gpg-key-import. A full description of how to supply sops with a key can be found in the sops [Documentation](https://github.com/mozilla/sops#usage)
 
 ## More information
 
